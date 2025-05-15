@@ -30,7 +30,7 @@ export default function Home() {
 
     const {
         showPrivateRepos,
-        togglePrivateRepos,
+        // togglePrivateRepos,
         showRateLimit,
         toggleRateLimit,
     } = useDashboardPreferences();
@@ -46,8 +46,8 @@ export default function Home() {
             onRefresh={() => fetchAllData()}
             showRateLimit={showRateLimit}
             toggleRateLimit={toggleRateLimit} // ✅ correct
-            showPrivateRepos={showPrivateRepos}
-            togglePrivateRepos={togglePrivateRepos} // ✅ correct
+            // showPrivateRepos={showPrivateRepos}
+            // togglePrivateRepos={togglePrivateRepos} // ✅ correct
         >
             {/* <Box
                 sx={{

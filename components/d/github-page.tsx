@@ -28,7 +28,7 @@ interface GitHubData {
 }
 
 export default function GitHubPage({ defaultUsername = "aayushsiwa" }: GitHubPageProps) {
-  const [username, setUsername] = useState(defaultUsername)
+  const [username] = useState(defaultUsername)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [data, setData] = useState<GitHubData | null>(null)

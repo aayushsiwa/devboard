@@ -24,11 +24,9 @@ interface HeaderProps {
     onRefresh: () => void;
     showRateLimit: boolean;
     toggleRateLimit: () => void;
-    showPrivateRepos: boolean;
-    togglePrivateRepos: () => void;
 }
 
-const Header = ({ onRefresh, showRateLimit, toggleRateLimit, showPrivateRepos,togglePrivateRepos }: HeaderProps) => {
+const Header = ({ onRefresh, showRateLimit, toggleRateLimit }: HeaderProps) => {
     const { data: session } = useSession();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 

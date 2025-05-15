@@ -10,8 +10,8 @@ interface LayoutProps {
     onRefresh: () => void;
     showRateLimit: boolean;
     toggleRateLimit: () => void;
-    showPrivateRepos: boolean;
-    togglePrivateRepos: () => void;
+    // showPrivateRepos: boolean;
+    // togglePrivateRepos: () => void;
 }
 
 const Layout = ({
@@ -19,8 +19,8 @@ const Layout = ({
     onRefresh,
     showRateLimit,
     toggleRateLimit,
-    showPrivateRepos,
-    togglePrivateRepos,
+    // showPrivateRepos,
+    // togglePrivateRepos,
 }: LayoutProps) => {
     return (
         <ThemeToggleProvider>
@@ -36,8 +36,8 @@ const Layout = ({
                     onRefresh={onRefresh}
                     showRateLimit={showRateLimit}
                     toggleRateLimit={toggleRateLimit}
-                    showPrivateRepos={showPrivateRepos}
-                    togglePrivateRepos={togglePrivateRepos}
+                    // showPrivateRepos={showPrivateRepos}
+                    // togglePrivateRepos={togglePrivateRepos}
                 />
 
                 <motion.div

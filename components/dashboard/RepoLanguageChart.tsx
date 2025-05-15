@@ -3,6 +3,7 @@ import { Paper, Typography, Box, useTheme, Skeleton } from '@mui/material';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { motion } from 'framer-motion';
 import { GitHubRepo } from '../../types/github';
+import type { TooltipProps } from 'recharts';
 
 interface RepoLanguageChartProps {
   repos: GitHubRepo[] | null;
@@ -48,7 +49,8 @@ const RepoLanguageChart = ({ repos, loading }: RepoLanguageChartProps) => {
     setData(sortedData.slice(0, 10));
   }, [repos]);
 
-  const CustomTooltip = ({ active, payload }: any) => {
+
+  const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
     if (active && payload && payload.length) {
       return (
         <Box sx={{ 
