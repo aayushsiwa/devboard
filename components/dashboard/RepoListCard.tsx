@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     Paper,
     Typography,
@@ -37,10 +37,16 @@ interface RepoListCardProps {
 const RepoListCard = ({ repos, loading }: RepoListCardProps) => {
     const [searchQuery, setSearchQuery] = useState("");
     const [sortBy, setSortBy] = useState("updated");
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     const handleSortChange = (event: SelectChangeEvent) => {
         setSortBy(event.target.value);
     };
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, sortBy]);
 
     const sortedAndFilteredRepos = repos
         ? repos
@@ -71,6 +77,12 @@ const RepoListCard = ({ repos, loading }: RepoListCardProps) => {
                   }
               })
         : [];
+
+    const totalPages = Math.ceil(sortedAndFilteredRepos.length / itemsPerPage);
+    const paginatedRepos = sortedAndFilteredRepos.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
 
     return (
         <motion.div
@@ -132,19 +144,10 @@ const RepoListCard = ({ repos, loading }: RepoListCardProps) => {
                 </Box>
 
                 {loading ? (
-                    <List
-                        sx={{
-                            width: "100%",
-                            bgcolor: "background.paper",
-                            p: 0,
-                        }}
-                    >
+                    <List sx={{ width: "100%", bgcolor: "background.paper", p: 0 }}>
                         {[...Array(5)].map((_, index) => (
                             <Box key={index}>
-                                <ListItem
-                                    alignItems="flex-start"
-                                    sx={{ px: 3 }}
-                                >
+                                <ListItem alignItems="flex-start" sx={{ px: 3 }}>
                                     <Box sx={{ width: "100%" }}>
                                         <Box
                                             sx={{
@@ -154,35 +157,13 @@ const RepoListCard = ({ repos, loading }: RepoListCardProps) => {
                                                 mb: 1,
                                             }}
                                         >
-                                            <Skeleton
-                                                variant="text"
-                                                width="40%"
-                                                height={30}
-                                            />
-                                            <Skeleton
-                                                variant="circular"
-                                                width={32}
-                                                height={32}
-                                            />
+                                            <Skeleton variant="text" width="40%" height={30} />
+                                            <Skeleton variant="circular" width={32} height={32} />
                                         </Box>
                                         <Skeleton variant="text" width="70%" />
-                                        <Box
-                                            sx={{
-                                                display: "flex",
-                                                gap: 2,
-                                                mt: 1,
-                                            }}
-                                        >
-                                            <Skeleton
-                                                variant="rounded"
-                                                width={70}
-                                                height={24}
-                                            />
-                                            <Skeleton
-                                                variant="rounded"
-                                                width={70}
-                                                height={24}
-                                            />
+                                        <Box sx={{ display: "flex", gap: 2, mt: 1 }}>
+                                            <Skeleton variant="rounded" width={70} height={24} />
+                                            <Skeleton variant="rounded" width={70} height={24} />
                                         </Box>
                                     </Box>
                                 </ListItem>
@@ -191,162 +172,161 @@ const RepoListCard = ({ repos, loading }: RepoListCardProps) => {
                         ))}
                     </List>
                 ) : repos && repos.length > 0 ? (
-                    <List
-                        sx={{
-                            width: "100%",
-                            bgcolor: "background.paper",
-                            p: 0,
-                        }}
-                    >
-                        <AnimatePresence>
-                            {sortedAndFilteredRepos.map((repo, index) => (
-                                <motion.div
-                                    key={repo.id}
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    transition={{ duration: 0.2 }}
-                                >
-                                    <ListItem
-                                        alignItems="flex-start"
-                                        sx={{ px: 3, display: "block" }}
-                                        secondaryAction={
-                                            <IconButton
-                                                edge="end"
-                                                aria-label="open repository"
-                                                href={repo.html_url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                            >
-                                                <OpenInNewIcon />
-                                            </IconButton>
-                                        }
+                    <>
+                        <List sx={{ width: "100%", bgcolor: "background.paper", p: 0 }}>
+                            <AnimatePresence>
+                                {paginatedRepos.map((repo, index) => (
+                                    <motion.div
+                                        key={repo.id}
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        transition={{ duration: 0.2 }}
                                     >
-                                        <Box
-                                            sx={{
-                                                display: "flex",
-                                                alignItems: "flex-start",
-                                            }}
-                                        >
-                                            <ListItemAvatar>
-                                                <Avatar
-                                                    sx={{
-                                                        bgcolor:
-                                                            "secondary.main",
-                                                    }}
+                                        <ListItem
+                                            alignItems="flex-start"
+                                            sx={{ px: 3, display: "block" }}
+                                            secondaryAction={
+                                                <IconButton
+                                                    edge="end"
+                                                    aria-label="open repository"
+                                                    href={repo.html_url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
                                                 >
-                                                    <CodeIcon />
-                                                </Avatar>
-                                            </ListItemAvatar>
-                                            <ListItemText
-                                                primary={
-                                                    <Typography
-                                                        variant="subtitle1"
-                                                        fontWeight={500}
-                                                    >
-                                                        {repo.name}
-                                                    </Typography>
-                                                }
-                                                secondary={
-                                                    repo.description && (
-                                                        <Typography
-                                                            variant="body2"
-                                                            color="text.primary"
-                                                            sx={{ mt: 0.5 }}
-                                                        >
-                                                            {repo.description}
-                                                        </Typography>
-                                                    )
-                                                }
-                                            />
-                                        </Box>
-
-                                        <Box
-                                            sx={{
-                                                display: "flex",
-                                                flexWrap: "wrap",
-                                                gap: 1,
-                                                mt: 1,
-                                                ml: 7, // align under text (Avatar + spacing)
-                                            }}
+                                                    <OpenInNewIcon />
+                                                </IconButton>
+                                            }
                                         >
-                                            {repo.language && (
+                                            <Box sx={{ display: "flex", alignItems: "flex-start" }}>
+                                                <ListItemAvatar>
+                                                    <Avatar sx={{ bgcolor: "secondary.main" }}>
+                                                        <CodeIcon />
+                                                    </Avatar>
+                                                </ListItemAvatar>
+                                                <ListItemText
+                                                    primary={
+                                                        <Typography variant="subtitle1" fontWeight={500}>
+                                                            {repo.name}
+                                                        </Typography>
+                                                    }
+                                                    secondary={
+                                                        repo.description && (
+                                                            <Typography
+                                                                variant="body2"
+                                                                color="text.primary"
+                                                                sx={{ mt: 0.5 }}
+                                                            >
+                                                                {repo.description}
+                                                            </Typography>
+                                                        )
+                                                    }
+                                                />
+                                            </Box>
+
+                                            <Box
+                                                sx={{
+                                                    display: "flex",
+                                                    flexWrap: "wrap",
+                                                    gap: 1,
+                                                    mt: 1,
+                                                    ml: 7,
+                                                }}
+                                            >
+                                                {repo.language && (
+                                                    <Chip
+                                                        size="small"
+                                                        label={repo.language}
+                                                        variant="outlined"
+                                                        sx={{ height: 24 }}
+                                                    />
+                                                )}
                                                 <Chip
+                                                    icon={<StarIcon sx={{ fontSize: "0.8rem !important" }} />}
                                                     size="small"
-                                                    label={repo.language}
+                                                    label={repo.stargazers_count}
                                                     variant="outlined"
                                                     sx={{ height: 24 }}
                                                 />
-                                            )}
-                                            <Chip
-                                                icon={
-                                                    <StarIcon
-                                                        sx={{
-                                                            fontSize:
-                                                                "0.8rem !important",
-                                                        }}
-                                                    />
-                                                }
-                                                size="small"
-                                                label={repo.stargazers_count}
-                                                variant="outlined"
-                                                sx={{ height: 24 }}
-                                            />
-                                            <Chip
-                                                icon={
-                                                    <ForkRightIcon
-                                                        sx={{
-                                                            fontSize:
-                                                                "0.8rem !important",
-                                                        }}
-                                                    />
-                                                }
-                                                size="small"
-                                                label={repo.forks_count}
-                                                variant="outlined"
-                                                sx={{ height: 24 }}
-                                            />
-                                            <Typography
-                                                variant="caption"
-                                                color="text.secondary"
-                                                sx={{
-                                                    ml: "auto",
-                                                    alignSelf: "center",
-                                                }}
-                                            >
-                                                Updated{" "}
-                                                {formatDistance(
-                                                    new Date(repo.updated_at),
-                                                    new Date(),
-                                                    {
-                                                        addSuffix: true,
-                                                    }
-                                                )}
-                                            </Typography>
-                                        </Box>
-                                    </ListItem>
+                                                <Chip
+                                                    icon={<ForkRightIcon sx={{ fontSize: "0.8rem !important" }} />}
+                                                    size="small"
+                                                    label={repo.forks_count}
+                                                    variant="outlined"
+                                                    sx={{ height: 24 }}
+                                                />
+                                                <Typography
+                                                    variant="caption"
+                                                    color="text.secondary"
+                                                    sx={{
+                                                        ml: "auto",
+                                                        alignSelf: "center",
+                                                    }}
+                                                >
+                                                    Updated{" "}
+                                                    {formatDistance(
+                                                        new Date(repo.updated_at),
+                                                        new Date(),
+                                                        {
+                                                            addSuffix: true,
+                                                        }
+                                                    )}
+                                                </Typography>
+                                            </Box>
+                                        </ListItem>
 
-                                    {index <
-                                        sortedAndFilteredRepos.length - 1 && (
-                                        <Divider component="li" />
-                                    )}
-                                </motion.div>
-                            ))}
-                        </AnimatePresence>
+                                        {index < paginatedRepos.length - 1 && (
+                                            <Divider component="li" />
+                                        )}
+                                    </motion.div>
+                                ))}
+                            </AnimatePresence>
 
-                        {sortedAndFilteredRepos.length === 0 && (
-                            <ListItem>
-                                <ListItemText
-                                    primary="No repositories found"
-                                    secondary="Try changing your search query"
-                                    primaryTypographyProps={{ align: "center" }}
-                                    secondaryTypographyProps={{
-                                        align: "center",
-                                    }}
-                                />
-                            </ListItem>
+                            {sortedAndFilteredRepos.length === 0 && (
+                                <ListItem>
+                                    <ListItemText
+                                        primary="No repositories found"
+                                        secondary="Try changing your search query"
+                                        primaryTypographyProps={{ align: "center" }}
+                                        secondaryTypographyProps={{ align: "center" }}
+                                    />
+                                </ListItem>
+                            )}
+                        </List>
+
+                        {/* Pagination Controls */}
+                        {totalPages > 1 && (
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    gap: 2,
+                                    py: 2,
+                                }}
+                            >
+                                <IconButton
+                                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                                    disabled={currentPage === 1}
+                                >
+                                    {"<"}
+                                </IconButton>
+                                <Typography variant="body2">
+                                    Page {currentPage} of {totalPages}
+                                </Typography>
+                                <IconButton
+                                    onClick={() =>
+                                        setCurrentPage((prev) =>
+                                            Math.min(prev + 1, totalPages)
+                                        )
+                                    }
+                                    disabled={currentPage === totalPages}
+                                >
+                                    {">"}
+                                </IconButton>
+                            </Box>
                         )}
-                    </List>
+                    </>
                 ) : (
                     <Box sx={{ p: 3 }}>
                         <Typography variant="body1" align="center">

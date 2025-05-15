@@ -1,105 +1,90 @@
-import { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
-import { GitHubUser, GitHubRepo, RateLimit } from '../types/github';
+// hooks/useGitHubData.ts
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import { GitHubUser, GitHubRepo, RateLimit } from "../types/github";
 
-export const useGitHubData = () => {
-  const [userData, setUserData] = useState<GitHubUser | null>(null);
-  const [repos, setRepos] = useState<GitHubRepo[] | null>(null);
-  const [rateLimit, setRateLimit] = useState<RateLimit | null>(null);
-  const [loading, setLoading] = useState<{user: boolean; repos: boolean; rateLimit: boolean}>({
-    user: false,
-    repos: false,
-    rateLimit: false
-  });
-  const [error, setError] = useState<{user: string | null; repos: string | null; rateLimit: string | null}>({
-    user: null,
-    repos: null,
-    rateLimit: null
-  });
+const fetchUser = async (): Promise<GitHubUser> => {
+    const { data } = await axios.get("/api/github/user");
+    return data;
+};
 
-  const fetchUserData = useCallback(async () => {
-    try {
-      setLoading(prev => ({ ...prev, user: true }));
-      setError(prev => ({ ...prev, user: null }));
-      
-      const response = await axios.get('/api/github/user');
-      setUserData(response.data);
-    } catch (err) {
-      console.error('Error fetching user data:', err);
-      setError(prev => ({ 
-        ...prev, 
-        user: 'Failed to fetch user data. Please try again later.'
-      }));
-    } finally {
-      setLoading(prev => ({ ...prev, user: false }));
-    }
-  }, []);
+const fetchRepos = async (): Promise<GitHubRepo[]> => {
+    const { data } = await axios.get("/api/github/repos");
+    console.log("Fetched Repos:", data);
+    return data; // Should include both private and public repos
+};
 
-  const fetchRepositories = useCallback(async () => {
-    try {
-      setLoading(prev => ({ ...prev, repos: true }));
-      setError(prev => ({ ...prev, repos: null }));
-      
-      const response = await axios.get('/api/github/repos');
-      setRepos(response.data);
-    } catch (err) {
-      console.error('Error fetching repositories:', err);
-      setError(prev => ({ 
-        ...prev, 
-        repos: 'Failed to fetch repositories. Please try again later.'
-      }));
-    } finally {
-      setLoading(prev => ({ ...prev, repos: false }));
-    }
-  }, []);
+const fetchRateLimit = async (): Promise<RateLimit> => {
+    const { data } = await axios.get("/api/github/rate-limit");
+    return data;
+};
 
-  const fetchRateLimit = useCallback(async () => {
-    try {
-      setLoading(prev => ({ ...prev, rateLimit: true }));
-      setError(prev => ({ ...prev, rateLimit: null }));
-      
-      const response = await axios.get('/api/github/rate-limit');
-      setRateLimit(response.data);
-    } catch (err) {
-      console.error('Error fetching rate limit:', err);
-      setError(prev => ({ 
-        ...prev, 
-        rateLimit: 'Failed to fetch rate limit data. Please try again later.'
-      }));
-    } finally {
-      setLoading(prev => ({ ...prev, rateLimit: false }));
-    }
-  }, []);
+export const useGitHubData = (showPrivate = false) => {
+    const {
+        data: userData,
+        isLoading: userLoading,
+        error: userError,
+        refetch: refetchUser,
+    } = useQuery({
+        queryKey: ["githubUser"],
+        queryFn: fetchUser,
+        staleTime: 60_000,
+    });
 
-  const fetchAllData = useCallback(() => {
-    fetchUserData();
-    fetchRepositories();
-    fetchRateLimit();
-  }, [fetchUserData, fetchRepositories, fetchRateLimit]);
-  
-  // Initial data load effect
-  useEffect(() => {
-    fetchAllData();
-    
-    // Refresh rate limit data every 5 minutes
-    const intervalId = setInterval(() => {
-      fetchRateLimit();
-    }, 5 * 60 * 1000);
-    
-    return () => clearInterval(intervalId);
-  }, [fetchAllData, fetchRateLimit]);
+    const {
+        data: allRepos,
+        isLoading: reposLoading,
+        error: reposError,
+        refetch: refetchRepos,
+    } = useQuery({
+        queryKey: ["githubRepos", showPrivate], // <- React Query will now refetch on toggle
+        queryFn: fetchRepos,
+        staleTime: 60_000,
+    });
 
-  return {
-    userData,
-    repos,
-    rateLimit,
-    loading,
-    error,
-    fetchUserData,
-    fetchRepositories,
-    fetchRateLimit,
-    fetchAllData
-  };
+    const {
+        data: rateLimit,
+        isLoading: rateLimitLoading,
+        error: rateLimitError,
+        refetch: refetchRateLimit,
+    } = useQuery({
+        queryKey: ["githubRateLimit"],
+        queryFn: fetchRateLimit,
+        staleTime: 60_000,
+    });
+
+    const filteredRepos = allRepos?.filter(repo => showPrivate || !repo.private) ?? [];
+    const filteredReposCount = filteredRepos.length;
+    console.log("Filtered Repos Count:", filteredReposCount);
+    console.log("All Repos Count:", allRepos?.length);
+    // useEffect(()=>{
+
+    // })
+
+    return {
+        userData,
+        repos: filteredRepos,
+        rateLimit,
+        loading: {
+            user: userLoading,
+            repos: reposLoading,
+            rateLimit: rateLimitLoading,
+        },
+        error: {
+            user: userError instanceof Error ? userError.message : null,
+            repos: reposError instanceof Error ? reposError.message : null,
+            rateLimit:
+                rateLimitError instanceof Error ? rateLimitError.message : null,
+        },
+        fetchUserData: () => refetchUser(),
+        fetchRepositories: () => refetchRepos(),
+        fetchRateLimit: () => refetchRateLimit(),
+        fetchAllData: () => {
+            refetchUser();
+            refetchRepos();
+            refetchRateLimit();
+        },
+    };
 };
 
 export default useGitHubData;
