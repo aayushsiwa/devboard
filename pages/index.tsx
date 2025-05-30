@@ -14,13 +14,13 @@ import {
     // FormControlLabel,
 } from "@mui/material";
 // import RefreshIcon from "@mui/icons-material/Refresh";
-import Layout from "../components/Layout";
-import UserInfoCard from "../components/dashboard/UserInfoCard";
-import RateLimitCard from "../components/dashboard/RateLimitCard";
-import RepoListCard from "../components/dashboard/RepoListCard";
-import RepoLanguageChart from "../components/dashboard/RepoLanguageChart";
-import DashboardSkeleton from "../components/dashboard/DashboardSkeleton";
-import useGitHubData from "../hooks/useGitHubData";
+import Layout from "@/components/Layout";
+import UserInfoCard from "@/components/dashboard/UserInfoCard";
+import RateLimitCard from "@/components/dashboard/RateLimitCard";
+import RepoListCard from "@/components/dashboard/RepoListCard";
+import RepoLanguageChart from "@/components/dashboard/RepoLanguageChart";
+import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
+import useGitHubData from "@/hooks/useGitHubData";
 import { useDashboardPreferences } from "@/context/DashboardPreferencesContext";
 
 // import { motion } from "framer-motion";
